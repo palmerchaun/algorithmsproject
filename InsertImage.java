@@ -106,8 +106,8 @@ public class InsertImage extends Application {
                 out = new Image(choose.toURI().toString());
                 view = new ImageView(out);
 
-                view.setFitWidth(500);
-                view.setFitHeight(500);
+                view.setFitWidth(400);
+                view.setFitHeight(400);
 
                 VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
@@ -131,8 +131,8 @@ public class InsertImage extends Application {
                 out = new Image(encrypted.toURI().toString());
                 view = new ImageView(out);
 
-                view.setFitWidth(500);
-                view.setFitHeight(500);
+                view.setFitWidth(400);
+                view.setFitHeight(400);
 
                 VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
@@ -148,8 +148,8 @@ public class InsertImage extends Application {
                 out = new Image(decrypted.toURI().toString());
                 view = new ImageView(out);
 
-                view.setFitWidth(500);
-                view.setFitHeight(500);
+                view.setFitWidth(400);
+                view.setFitHeight(400);
 
                 VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
@@ -162,13 +162,13 @@ public class InsertImage extends Application {
             try {
                     BufferedImage result = rotate90(img);
                     img = result;
-                    File output = new File(store);
-                    ImageIO.write(result, "png", new File(store   + "\\newImage.png"));
+                    File output = new File(store   + "\\newImage.png");
+                    ImageIO.write(result, "png", output);
                     out = new Image(String.valueOf(output.toURI().toURL()));
                     view = new ImageView(out);
 
-                    view.setFitWidth(500);
-                    view.setFitHeight(500);
+                    view.setFitWidth(400);
+                    view.setFitHeight(400);
 
                     VBox box = new VBox(view);
                     box.setAlignment(Pos.CENTER);
@@ -188,8 +188,8 @@ public class InsertImage extends Application {
                 out = new Image(String.valueOf(output.toURI().toURL()));
                 view = new ImageView(out);
 
-                view.setFitWidth(500);
-                view.setFitHeight(500);
+                view.setFitWidth(400);
+                view.setFitHeight(400);
 
                 VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
@@ -209,8 +209,8 @@ public class InsertImage extends Application {
                 out = new Image(String.valueOf(output.toURI().toURL()));
                 view = new ImageView(out);
 
-                view.setFitWidth(500);
-                view.setFitHeight(500);
+                view.setFitWidth(400);
+                view.setFitHeight(400);
 
                 VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
@@ -230,8 +230,8 @@ public class InsertImage extends Application {
                 out = new Image(String.valueOf(output.toURI().toURL()));
                 view = new ImageView(out);
 
-                view.setFitWidth(500);
-                view.setFitHeight(500);
+                view.setFitWidth(400);
+                view.setFitHeight(400);
 
                 VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
@@ -251,8 +251,8 @@ public class InsertImage extends Application {
                 out = new Image(String.valueOf(output.toURI().toURL()));
                 view = new ImageView(out);
 
-                view.setFitWidth(500);
-                view.setFitHeight(500);
+                view.setFitWidth(400);
+                view.setFitHeight(400);
 
                 VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
@@ -272,8 +272,8 @@ public class InsertImage extends Application {
                 out = new Image(String.valueOf(output.toURI().toURL()));
                 view = new ImageView(out);
 
-                view.setFitWidth(500);
-                view.setFitHeight(500);
+                view.setFitWidth(400);
+                view.setFitHeight(400);
 
                 VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
