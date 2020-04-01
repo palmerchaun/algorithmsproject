@@ -1,5 +1,5 @@
 import javafx.application.Application;
-import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -17,7 +17,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
+import javafx.scene.control.TextField;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -25,16 +25,22 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class InsertImage extends Application {
-    Image img;
+    BufferedImage img;
     Image out;
     ImageView view;
-    ImageView viewOut;
+    String store;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         BorderPane pane = new BorderPane();
         GridPane top = new GridPane();
         FileChooser input = new FileChooser();
+
+        TextField fold = new TextField("C:\\Users\\{{username}}\\Documents");
+        fold.selectAll();
+        Label folder = new Label("Type the desired folder path and hit 'Enter'");
+        folder.setFont(Font.font("Verdana", FontWeight.NORMAL, FontPosture.REGULAR, 14));
+        folder.setTextFill(Color.WHITE);
 
         Label title = new Label("Image Modification Algorithms");
         title.setTextFill(Color.GREENYELLOW);
@@ -52,49 +58,60 @@ public class InsertImage extends Application {
         Button rotate = new Button("Rotate 90 degrees");
         Button reflectX = new Button("Reflect X");
         Button reflectY = new Button("Reflect Y");
-        Button rotateX = new Button("Rotate about X axis");
-        Button rotateY = new Button("Rotate about Y axis");
-        Button pubKey = new Button("Download public key");
-        Button privateKey = new Button("Download private key");
+        Button grayScale = new Button("Gray Scale");
+        Button rotateX = new Button("Rotate about X");
+        Button rotateY = new Button("Rotate about Y");
 
         top.setHgap(20);
         top.setVgap(30);
+        BorderPane.setMargin(top, new Insets(0, 0, 0, 40));
 
-        top.add(encrypt, 2, 1);
-        top.add(decrypt, 3, 1);
-        top.add(rotate, 4, 1);
-        top.add(selectImage, 0, 1);
-        top.add(reflectX, 7, 1);
-        top.add(reflectY, 8, 1);
-        top.add(rotateX, 5, 1);
-        top.add(rotateY, 6, 1);
-        top.add(pub, 1, 1);
-        top.add(pubKey, 9, 1);
-        top.add(privateKey, 10, 1);
+        top.add(pub, 0, 1);
+        top.add(encrypt, 1, 1);
+        top.add(decrypt, 2, 1);
+        top.add(rotate, 3, 1);
+
+        top.add(selectImage, 4, 1);
+        GridPane.setMargin(selectImage, new Insets(0, 50, 0, 50));
+        GridPane.setHalignment(selectImage, HPos.CENTER);
+
+        top.add(grayScale, 5, 1);
+        top.add(rotateX, 6, 1);
+        top.add(rotateY, 7, 1);
+        top.add(reflectX, 8, 1);
+        top.add(reflectY, 9, 1);
+
+        top.add(folder, 4, 2);
+        GridPane.setHalignment(folder, HPos.CENTER);
+        top.add(fold, 4, 3);
+        GridPane.setHalignment(fold, HPos.CENTER);
 
         String style = "-fx-background-color: rgba(0, 0, 0, 1.0);";
         pane.setStyle(style);
         pane.setBackground(Background.EMPTY);
 
-        final String[] imagePath = {""};
-        final Image[] image = new Image[1];
-
-        final String[] imagePathPriv = {""};
-        final Image[] imagePriv = new Image[1];
+        fold.setOnAction(e-> {
+            store = fold.getText();
+        });
 
         selectImage.setOnAction(e->
         {
-            final File choose = input.showOpenDialog(primaryStage);
+            File choose = input.showOpenDialog(primaryStage);
             if(choose != null) {
-                img = new Image(choose.toURI().toString());
-                view = new ImageView(img);
+                try{
+                    img = ImageIO.read(new File(choose.getPath()));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                out = new Image(choose.toURI().toString());
+                view = new ImageView(out);
 
                 view.setFitWidth(500);
                 view.setFitHeight(500);
 
                 VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
-                box.setPadding(new Insets(50));
+                box.setPadding(new Insets(20));
                 pane.setBottom(box);
             }
         });
@@ -102,8 +119,8 @@ public class InsertImage extends Application {
         pub.setOnAction(e->{
             final File choose = input.showOpenDialog(primaryStage);
             if(choose != null) {
-                img = new Image(choose.toURI().toString());
-                view = new ImageView(img);
+                out = new Image(choose.toURI().toString());
+                view = new ImageView(out);
             }
         });
 
@@ -112,21 +129,15 @@ public class InsertImage extends Application {
             File encrypted = input.showOpenDialog(primaryStage);
             if(encrypted != null) {
                 out = new Image(encrypted.toURI().toString());
-                viewOut = new ImageView(out);
+                view = new ImageView(out);
 
-                viewOut.setFitWidth(500);
-                viewOut.setFitHeight(500);
+                view.setFitWidth(500);
+                view.setFitHeight(500);
 
-                VBox box = new VBox(viewOut);
+                VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
-                box.setPadding(new Insets(50));
+                box.setPadding(new Insets(20));
                 pane.setBottom(box);
-
-//                imagePath[0] = "Downloads/protocols.png";
-//                image[0] = new Image(imagePath[0]);
-//
-//                imagePathPriv[0] = "Downloads/protocols.png";
-//                imagePriv[0] = new Image(imagePath[0]);
             }
         });
 
@@ -135,74 +146,142 @@ public class InsertImage extends Application {
             File decrypted = input.showOpenDialog(primaryStage);
             if(decrypted != null) {
                 out = new Image(decrypted.toURI().toString());
-                viewOut = new ImageView(out);
+                view = new ImageView(out);
 
-                viewOut.setFitWidth(500);
-                viewOut.setFitHeight(500);
+                view.setFitWidth(500);
+                view.setFitHeight(500);
 
-                VBox box = new VBox(viewOut);
+                VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
-                box.setPadding(new Insets(50));
+                box.setPadding(new Insets(20));
                 pane.setBottom(box);
             }
         });
 
         rotate.setOnAction(e-> {
-            //call matrix function instead of input
-            //we can make multiple matrix buttons if we want to
-            File result = input.showOpenDialog(primaryStage);
-            if(result != null) {
-                out = new Image(result.toURI().toString());
-                viewOut = new ImageView(out);
+            try {
+                    BufferedImage result = rotate90(img);
+                    img = result;
+                    File output = new File(store);
+                    ImageIO.write(result, "png", new File(store   + "\\newImage.png"));
+                    out = new Image(String.valueOf(output.toURI().toURL()));
+                    view = new ImageView(out);
 
-                viewOut.setFitWidth(500);
-                viewOut.setFitHeight(500);
+                    view.setFitWidth(500);
+                    view.setFitHeight(500);
 
-                VBox box = new VBox(viewOut);
+                    VBox box = new VBox(view);
+                    box.setAlignment(Pos.CENTER);
+                    box.setPadding(new Insets(20));
+                    pane.setBottom(box);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        grayScale.setOnAction(e->{
+            try {
+                BufferedImage result = grayScale(img);
+                img = result;
+                File output = new File(store + "\\newImage.png");
+                ImageIO.write(result, "png", output);
+                out = new Image(String.valueOf(output.toURI().toURL()));
+                view = new ImageView(out);
+
+                view.setFitWidth(500);
+                view.setFitHeight(500);
+
+                VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
-                box.setPadding(new Insets(50));
+                box.setPadding(new Insets(20));
                 pane.setBottom(box);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         });
 
         rotateX.setOnAction(e->{
-            final File choose = input.showOpenDialog(primaryStage);
-            if(choose != null) {
-                img = new Image(choose.toURI().toString());
-                view = new ImageView(img);
+            try {
+                BufferedImage result = rotateAboutX(img);
+                img = result;
+                File output = new File( store + "\\newImage.png");
+                ImageIO.write(result, "png", output);
+                out = new Image(String.valueOf(output.toURI().toURL()));
+                view = new ImageView(out);
+
+                view.setFitWidth(500);
+                view.setFitHeight(500);
+
+                VBox box = new VBox(view);
+                box.setAlignment(Pos.CENTER);
+                box.setPadding(new Insets(20));
+                pane.setBottom(box);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         });
 
         rotateY.setOnAction(e->{
-            final File choose = input.showOpenDialog(primaryStage);
-            if(choose != null) {
-                img = new Image(choose.toURI().toString());
-                view = new ImageView(img);
+            try {
+                BufferedImage result = rotateAboutY(img);
+                img = result;
+                File output = new File(store  + "\\newImage.png");
+                ImageIO.write(result, "png", output);
+                out = new Image(String.valueOf(output.toURI().toURL()));
+                view = new ImageView(out);
+
+                view.setFitWidth(500);
+                view.setFitHeight(500);
+
+                VBox box = new VBox(view);
+                box.setAlignment(Pos.CENTER);
+                box.setPadding(new Insets(20));
+                pane.setBottom(box);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         });
 
         reflectX.setOnAction(e->{
-            final File choose = input.showOpenDialog(primaryStage);
-            if(choose != null) {
-                img = new Image(choose.toURI().toString());
-                view = new ImageView(img);
+            try {
+                BufferedImage result = reflectX(img);
+                img = result;
+                File output = new File(store  + "\\newImage.png");
+                ImageIO.write(result, "png", output);
+                out = new Image(String.valueOf(output.toURI().toURL()));
+                view = new ImageView(out);
+
+                view.setFitWidth(500);
+                view.setFitHeight(500);
+
+                VBox box = new VBox(view);
+                box.setAlignment(Pos.CENTER);
+                box.setPadding(new Insets(20));
+                pane.setBottom(box);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         });
 
         reflectY.setOnAction(e->{
-            final File choose = input.showOpenDialog(primaryStage);
-            if(choose != null) {
-                img = new Image(choose.toURI().toString());
-                view = new ImageView(img);
+            try {
+                BufferedImage result = reflectY(img);
+                img = result;
+                File output = new File(store   + "\\newImage.png");
+                ImageIO.write(result, "png", output);
+                out = new Image(String.valueOf(output.toURI().toURL()));
+                view = new ImageView(out);
+
+                view.setFitWidth(500);
+                view.setFitHeight(500);
+
+                VBox box = new VBox(view);
+                box.setAlignment(Pos.CENTER);
+                box.setPadding(new Insets(20));
+                pane.setBottom(box);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
-        });
-
-        pubKey.setOnAction(e->{
-//            saveToFile(image[0]);
-        });
-
-        privateKey.setOnAction(e->{
-//            saveToFile(imagePriv[0]);
         });
 
         Scene scene = new Scene(pane);
@@ -213,13 +292,69 @@ public class InsertImage extends Application {
         primaryStage.show(); // Display the stage
     }
 
-//    public static void saveToFile(Image image) {
-//        File outputFile = new File("C:/JavaFX/");
-//        BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
-//        try {
-//            ImageIO.write(bImage, "png", outputFile);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
+    private static BufferedImage grayScale(BufferedImage img) {
+        BufferedImage result = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        for (int i = 0; i < img.getWidth(); i++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+
+                result.setRGB(i, j, img.getRGB(i, j));
+            }
+        }
+        return result;
+    }
+
+    private static BufferedImage rotate90(BufferedImage img) {
+        BufferedImage result = new BufferedImage(img.getHeight(), img.getWidth(), BufferedImage.TYPE_INT_RGB);
+        for (int i = 0; i < img.getWidth(); i++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+
+                result.setRGB(j, result.getHeight() - i - 1, img.getRGB(i, j));
+            }
+        }
+        return result;
+    }
+
+    private static BufferedImage reflectX(BufferedImage img) {
+        BufferedImage result = img.getSubimage(0, 0, img.getWidth(), img.getHeight());
+        for (int i = 0; i < img.getWidth(); i++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+
+                result.setRGB(i, img.getHeight() - j - 1, img.getRGB(i, j));
+            }
+        }
+        return result;
+    }
+
+    private static BufferedImage reflectY(BufferedImage img) {
+        BufferedImage result = img.getSubimage(0, 0, img.getWidth(), img.getHeight());
+        for (int i = 0; i < img.getWidth(); i++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+
+                result.setRGB(img.getWidth() - i - 1, j, img.getRGB(i, j));
+            }
+        }
+        return result;
+    }
+
+    private static BufferedImage rotateAboutX(BufferedImage img) {
+        BufferedImage result = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int i = 0; i < img.getWidth(); i++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+
+                result.setRGB(i, img.getHeight() - j - 1, img.getRGB(i, j));
+            }
+        }
+        return result;
+    }
+
+    private static BufferedImage rotateAboutY(BufferedImage img) {
+        BufferedImage result = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int i = 0; i < img.getWidth(); i++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+
+                result.setRGB(img.getWidth() - i - 1, j, img.getRGB(i, j));
+            }
+        }
+        return result;
+    }
 }
