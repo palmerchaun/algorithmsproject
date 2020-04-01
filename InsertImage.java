@@ -1,5 +1,5 @@
 import javafx.application.Application;
-import javafx.geometry.HPos;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -10,7 +10,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -18,7 +17,12 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 public class InsertImage extends Application {
     Image img;
@@ -29,7 +33,7 @@ public class InsertImage extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         BorderPane pane = new BorderPane();
-        GridPane center = new GridPane();
+        GridPane top = new GridPane();
         FileChooser input = new FileChooser();
 
         Label title = new Label("Image Modification Algorithms");
@@ -39,50 +43,44 @@ public class InsertImage extends Application {
 
         BorderPane.setAlignment(title, Pos.CENTER);
         pane.setTop(title);
+        pane.setCenter(top);
 
         Button selectImage = new Button("Select image to modify");
-        Button encrypt = new Button("Encrypt image");
-        Button decrypt = new Button("Decrypt image");
-        Button matrix = new Button("Perform matrix operations");
+        Button pub = new Button("Select public key (decrypt only)");
+        Button encrypt = new Button("Encrypt");
+        Button decrypt = new Button("Decrypt");
+        Button rotate = new Button("Rotate 90 degrees");
+        Button reflectX = new Button("Reflect X");
+        Button reflectY = new Button("Reflect Y");
+        Button rotateX = new Button("Rotate about X axis");
+        Button rotateY = new Button("Rotate about Y axis");
+        Button pubKey = new Button("Download public key");
+        Button privateKey = new Button("Download private key");
 
-        center.setHgap(20);
-        center.setVgap(30);
+        top.setHgap(20);
+        top.setVgap(30);
 
-        GridPane.setHalignment(selectImage, HPos.CENTER);
-        GridPane.setHalignment(encrypt, HPos.CENTER);
-        GridPane.setHalignment(decrypt, HPos.CENTER);
-        GridPane.setHalignment(matrix, HPos.CENTER);
-
-        center.setAlignment(Pos.CENTER);
-        pane.setCenter(center);
-
-        center.add(selectImage, 0,0);
-        center.add(encrypt, 0, 1);
-        center.add(decrypt, 0, 2);
-        center.add(matrix, 0, 3);
+        top.add(encrypt, 2, 1);
+        top.add(decrypt, 3, 1);
+        top.add(rotate, 4, 1);
+        top.add(selectImage, 0, 1);
+        top.add(reflectX, 7, 1);
+        top.add(reflectY, 8, 1);
+        top.add(rotateX, 5, 1);
+        top.add(rotateY, 6, 1);
+        top.add(pub, 1, 1);
+        top.add(pubKey, 9, 1);
+        top.add(privateKey, 10, 1);
 
         String style = "-fx-background-color: rgba(0, 0, 0, 1.0);";
         pane.setStyle(style);
         pane.setBackground(Background.EMPTY);
 
-        Rectangle rec1 = new Rectangle(500, 500);
-        rec1.setFill(Color.WHITE);
-        rec1.setStroke(Color.BLACK);
+        final String[] imagePath = {""};
+        final Image[] image = new Image[1];
 
-        Rectangle rec2 = new Rectangle(500, 500);
-        rec2.setFill(Color.WHITE);
-        rec2.setStroke(Color.BLACK);
-
-        VBox box1 = new VBox(rec1);
-        VBox box2 = new VBox(rec2);
-
-        box1.setAlignment(Pos.CENTER);
-        box1.setPadding(new Insets(0, 0, 0, 60));
-        box2.setAlignment(Pos.CENTER);
-        box2.setPadding(new Insets(0, 60, 0, 0));
-
-        pane.setLeft(box1);
-        pane.setRight(box2);
+        final String[] imagePathPriv = {""};
+        final Image[] imagePriv = new Image[1];
 
         selectImage.setOnAction(e->
         {
@@ -93,12 +91,19 @@ public class InsertImage extends Application {
 
                 view.setFitWidth(500);
                 view.setFitHeight(500);
-//                viewOut.setPreserveRatio(true);   //do we want to preserve the ratio or force it to be 500x500?
 
                 VBox box = new VBox(view);
                 box.setAlignment(Pos.CENTER);
-                box.setPadding(new Insets(0, 0, 0, 60));
-                pane.setLeft(box);
+                box.setPadding(new Insets(50));
+                pane.setBottom(box);
+            }
+        });
+
+        pub.setOnAction(e->{
+            final File choose = input.showOpenDialog(primaryStage);
+            if(choose != null) {
+                img = new Image(choose.toURI().toString());
+                view = new ImageView(img);
             }
         });
 
@@ -114,8 +119,14 @@ public class InsertImage extends Application {
 
                 VBox box = new VBox(viewOut);
                 box.setAlignment(Pos.CENTER);
-                box.setPadding(new Insets(0, 60, 0, 0));
-                pane.setRight(box);
+                box.setPadding(new Insets(50));
+                pane.setBottom(box);
+
+//                imagePath[0] = "Downloads/protocols.png";
+//                image[0] = new Image(imagePath[0]);
+//
+//                imagePathPriv[0] = "Downloads/protocols.png";
+//                imagePriv[0] = new Image(imagePath[0]);
             }
         });
 
@@ -131,12 +142,12 @@ public class InsertImage extends Application {
 
                 VBox box = new VBox(viewOut);
                 box.setAlignment(Pos.CENTER);
-                box.setPadding(new Insets(0, 60, 0, 0));
-                pane.setRight(box);
+                box.setPadding(new Insets(50));
+                pane.setBottom(box);
             }
         });
 
-        matrix.setOnAction(e-> {
+        rotate.setOnAction(e-> {
             //call matrix function instead of input
             //we can make multiple matrix buttons if we want to
             File result = input.showOpenDialog(primaryStage);
@@ -149,12 +160,50 @@ public class InsertImage extends Application {
 
                 VBox box = new VBox(viewOut);
                 box.setAlignment(Pos.CENTER);
-                box.setPadding(new Insets(0, 60, 0, 0));
-                pane.setRight(box);
+                box.setPadding(new Insets(50));
+                pane.setBottom(box);
             }
         });
 
-        //insert algorithm functions here
+        rotateX.setOnAction(e->{
+            final File choose = input.showOpenDialog(primaryStage);
+            if(choose != null) {
+                img = new Image(choose.toURI().toString());
+                view = new ImageView(img);
+            }
+        });
+
+        rotateY.setOnAction(e->{
+            final File choose = input.showOpenDialog(primaryStage);
+            if(choose != null) {
+                img = new Image(choose.toURI().toString());
+                view = new ImageView(img);
+            }
+        });
+
+        reflectX.setOnAction(e->{
+            final File choose = input.showOpenDialog(primaryStage);
+            if(choose != null) {
+                img = new Image(choose.toURI().toString());
+                view = new ImageView(img);
+            }
+        });
+
+        reflectY.setOnAction(e->{
+            final File choose = input.showOpenDialog(primaryStage);
+            if(choose != null) {
+                img = new Image(choose.toURI().toString());
+                view = new ImageView(img);
+            }
+        });
+
+        pubKey.setOnAction(e->{
+//            saveToFile(image[0]);
+        });
+
+        privateKey.setOnAction(e->{
+//            saveToFile(imagePriv[0]);
+        });
 
         Scene scene = new Scene(pane);
         scene.setFill(Color.TRANSPARENT);
@@ -163,4 +212,14 @@ public class InsertImage extends Application {
         primaryStage.setMaximized(true);
         primaryStage.show(); // Display the stage
     }
+
+//    public static void saveToFile(Image image) {
+//        File outputFile = new File("C:/JavaFX/");
+//        BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
+//        try {
+//            ImageIO.write(bImage, "png", outputFile);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }
