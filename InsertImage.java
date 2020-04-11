@@ -19,13 +19,16 @@ import javafx.scene.image.ImageView;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import javax.imageio.ImageIO;
 
 public class InsertImage extends Application {
     BufferedImage img;
+    BufferedImage secondImg;
     Image out;
     ImageView view;
     String store;
@@ -52,9 +55,8 @@ public class InsertImage extends Application {
         pane.setCenter(top);
 
         Button selectImage = new Button("Select image to modify");
-        Button pub = new Button("Select public key (decrypt only)");
-        Button encrypt = new Button("Encrypt");
-        Button decrypt = new Button("Decrypt");
+        Button second = new Button("Select a second image (for image combiner)");
+        Button combine = new Button("Combine");
         Button rotate = new Button("Rotate 90 degrees");
         Button reflectX = new Button("Reflect X");
         Button reflectY = new Button("Reflect Y");
@@ -66,24 +68,23 @@ public class InsertImage extends Application {
         top.setVgap(30);
         BorderPane.setMargin(top, new Insets(0, 0, 0, 40));
 
-        top.add(pub, 0, 1);
-        top.add(encrypt, 1, 1);
-        top.add(decrypt, 2, 1);
-        top.add(rotate, 3, 1);
+        top.add(second, 0, 1);
+        top.add(combine, 1, 1);
+        top.add(rotate, 2, 1);
 
-        top.add(selectImage, 4, 1);
+        top.add(selectImage, 3, 1);
         GridPane.setMargin(selectImage, new Insets(0, 50, 0, 50));
         GridPane.setHalignment(selectImage, HPos.CENTER);
 
-        top.add(grayScale, 5, 1);
-        top.add(rotateX, 6, 1);
-        top.add(rotateY, 7, 1);
-        top.add(reflectX, 8, 1);
-        top.add(reflectY, 9, 1);
+        top.add(grayScale, 4, 1);
+        top.add(rotateX, 5, 1);
+        top.add(rotateY, 6, 1);
+        top.add(reflectX, 7, 1);
+        top.add(reflectY, 8, 1);
 
-        top.add(folder, 4, 2);
+        top.add(folder, 3, 2);
         GridPane.setHalignment(folder, HPos.CENTER);
-        top.add(fold, 4, 3);
+        top.add(fold, 3, 3);
         GridPane.setHalignment(fold, HPos.CENTER);
 
         String style = "-fx-background-color: rgba(0, 0, 0, 1.0);";
@@ -99,7 +100,7 @@ public class InsertImage extends Application {
             File choose = input.showOpenDialog(primaryStage);
             if(choose != null) {
                 try{
-                    img = ImageIO.read(new File(choose.getPath()));
+                    img = ImageIO.read(choose);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -116,20 +117,19 @@ public class InsertImage extends Application {
             }
         });
 
-        pub.setOnAction(e->{
-            final File choose = input.showOpenDialog(primaryStage);
+        second.setOnAction(e->{
+            File choose = input.showOpenDialog(primaryStage);
             if(choose != null) {
+                try {
+                    secondImg = ImageIO.read(choose);
+                    int type = secondImg.getType() == 0? BufferedImage.TYPE_INT_ARGB
+                            : secondImg.getType();
+                    secondImg = resizeImage(secondImg, type, img.getWidth(), img.getHeight());
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                }
                 out = new Image(choose.toURI().toString());
                 view = new ImageView(out);
-            }
-        });
-
-        encrypt.setOnAction(e-> {
-            //call encrypt function instead of input
-            File encrypted = input.showOpenDialog(primaryStage);
-            if(encrypted != null) {
-                out = new Image(encrypted.toURI().toString());
-                view = new ImageView(out);
 
                 view.setFitWidth(400);
                 view.setFitHeight(400);
@@ -141,11 +141,13 @@ public class InsertImage extends Application {
             }
         });
 
-        decrypt.setOnAction(e-> {
-            //call decrypt function instead of input
-            File decrypted = input.showOpenDialog(primaryStage);
-            if(decrypted != null) {
-                out = new Image(decrypted.toURI().toString());
+        combine.setOnAction(e-> {
+            try {
+                BufferedImage result = combineImages(img, secondImg);
+                img = result;
+                File output = new File(store   + "\\newImage.png");
+                ImageIO. write(result, "png", output);
+                out = new Image(String.valueOf(output.toURI().toURL()));
                 view = new ImageView(out);
 
                 view.setFitWidth(400);
@@ -155,6 +157,8 @@ public class InsertImage extends Application {
                 box.setAlignment(Pos.CENTER);
                 box.setPadding(new Insets(20));
                 pane.setBottom(box);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         });
 
@@ -292,6 +296,17 @@ public class InsertImage extends Application {
         primaryStage.show(); // Display the stage
     }
 
+    private static BufferedImage resizeImage(BufferedImage originalImage, int type,
+                                             Integer img_width, Integer img_height)
+    {
+        BufferedImage resizedImage = new BufferedImage(img_width, img_height, type);
+        Graphics2D g = resizedImage.createGraphics();
+        g.drawImage(originalImage, 0, 0, img_width, img_height, null);
+        g.dispose();
+
+        return resizedImage;
+    }
+
     private static BufferedImage grayScale(BufferedImage img) {
         BufferedImage result = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
         for (int i = 0; i < img.getWidth(); i++) {
@@ -355,6 +370,47 @@ public class InsertImage extends Application {
                 result.setRGB(img.getWidth() - i - 1, j, img.getRGB(i, j));
             }
         }
+        return result;
+    }
+
+    public static BufferedImage combineImages(BufferedImage a, BufferedImage b) {
+        if (a.getWidth() != b.getWidth() || a.getHeight() != b.getHeight()) {
+            return null;
+        }
+
+        BufferedImage result = new BufferedImage(a.getWidth(), a.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int i = 0; i < a.getHeight(); i++) {
+            for (int j = 0; j < a.getWidth(); j++) {
+                byte[] aPixel = new BigInteger("" + a.getRGB(j,i)).toByteArray();
+                byte[] bPixel = new BigInteger("" + b.getRGB(j,i)).toByteArray();
+
+                byte[] aFixed = new byte[4];
+                byte[] bFixed = new byte[4];
+
+                for (int k = 0; k < 4; k++) {
+                    if (aPixel.length > k) {
+                        aFixed[k] = aPixel[k];
+                    } else {
+                        aFixed[k] = 0;
+                    }
+
+                    if (bPixel.length > k) {
+                        bFixed[k] = bPixel[k];
+                    } else{
+                        bFixed[k] = 0;
+                    }
+                }
+
+                byte[] newPixel = new byte[4];
+                newPixel[0] = -1;
+                for (int k = 1; k < 4; k++) {
+                    newPixel[k] = (byte)(int)(((int)aFixed[k] + (int)bFixed[k]) / 2);
+                }
+
+                result.setRGB(j, i, new BigInteger(newPixel).intValue());
+            }
+        }
+
         return result;
     }
 }
